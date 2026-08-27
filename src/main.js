@@ -9,6 +9,7 @@ const dropzoneEmpty = document.getElementById('dropzone-empty');
 const fileInput = document.getElementById('file-input');
 const browseBtn = document.getElementById('browse-btn');
 const preview = document.getElementById('preview');
+const fileError = document.getElementById('file-error');
 
 const modelStatus = document.getElementById('model-status');
 const modelStatusLabel = document.getElementById('model-status-label');
@@ -25,7 +26,9 @@ const exportVttBtn = document.getElementById('export-vtt');
 const captionListEl = document.getElementById('caption-list');
 
 let currentFile = null;
+let currentObjectUrl = null;
 let service = null;
+let isBusy = false; // true while a model load or transcription is in flight
 
 const editor = new CaptionEditor({
   listEl: captionListEl,
@@ -51,10 +54,39 @@ const editor = new CaptionEditor({
   }
 })();
 
+// ---- Stray-drop safety net ----
+// Without this, dropping a file even slightly outside the dropzone (or on
+// any other part of the page) makes the browser navigate away to render the
+// raw file, silently blowing away the whole app. Suppressing the default at
+// the document level everywhere makes drag-and-drop safe regardless of
+// exactly where the user releases the file.
+['dragover', 'drop'].forEach((evt) => {
+  document.addEventListener(evt, (e) => e.preventDefault());
+});
+
+function showFileError(message) {
+  fileError.textContent = message;
+  fileError.hidden = false;
+}
+
+function clearFileError() {
+  fileError.hidden = true;
+  fileError.textContent = '';
+}
+
+function isSupportedMediaFile(file) {
+  if (file.type) return file.type.startsWith('video/') || file.type.startsWith('audio/');
+  // Some OS/browser combinations leave `type` empty for less common
+  // containers (e.g. .mkv). Fall back to extension sniffing so those
+  // files aren't rejected outright.
+  return /\.(mp4|mov|m4v|webm|mkv|avi|mp3|wav|m4a|aac|ogg|flac)$/i.test(file.name || '');
+}
+
 // ---- File selection (click + drag/drop) ----
 browseBtn.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', () => {
   if (fileInput.files?.[0]) handleFile(fileInput.files[0]);
+  fileInput.value = ''; // allow re-selecting the same file later
 });
 
 ['dragenter', 'dragover'].forEach((evt) =>
@@ -75,9 +107,28 @@ dropzone.addEventListener('drop', (e) => {
 });
 
 function handleFile(file) {
+  if (isBusy) {
+    showFileError('A transcription is still in progress. Please wait for it to finish first.');
+    return;
+  }
+
+  if (!isSupportedMediaFile(file)) {
+    showFileError(`"${file.name}" doesn't look like a video or audio file. Please choose a media file.`);
+    return;
+  }
+  clearFileError();
+
+  // A previously loaded file's captions belong to that file, not this one —
+  // carrying them over would let someone export stale, mismatched captions.
+  editor.setSegments([]);
+  exportSrtBtn.disabled = true;
+  exportVttBtn.disabled = true;
+  modelStatus.hidden = true;
+
+  if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
   currentFile = file;
-  const url = URL.createObjectURL(file);
-  preview.src = url;
+  currentObjectUrl = URL.createObjectURL(file);
+  preview.src = currentObjectUrl;
   preview.hidden = false;
   dropzoneEmpty.hidden = true;
   transcribeBtn.disabled = false;
@@ -102,7 +153,9 @@ function setModelProgress(progress) {
 }
 
 transcribeBtn.addEventListener('click', async () => {
-  if (!currentFile) return;
+  if (!currentFile || isBusy) return;
+  isBusy = true;
+  clearFileError();
   transcribeBtn.disabled = true;
   transcribeBtn.textContent = 'Working…';
   modelStatus.hidden = false;
@@ -132,6 +185,7 @@ transcribeBtn.addEventListener('click', async () => {
     console.error(err);
     modelStatusLabel.textContent = `Something went wrong: ${err.message}`;
   } finally {
+    isBusy = false;
     transcribeBtn.disabled = false;
     transcribeBtn.textContent = 'Generate captions';
   }
@@ -146,4 +200,8 @@ exportSrtBtn.addEventListener('click', () => {
 exportVttBtn.addEventListener('click', () => {
   const vtt = segmentsToVTT(editor.getSegments());
   downloadTextFile('captions.vtt', vtt, 'text/vtt');
+});
+
+window.addEventListener('beforeunload', () => {
+  if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
 });

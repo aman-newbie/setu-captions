@@ -173,6 +173,16 @@ button, input, select {
 .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
 .btn-ghost:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); }
 
+.file-error {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--danger);
+  background: rgba(229, 100, 107, 0.1);
+  border: 1px solid rgba(229, 100, 107, 0.35);
+}
+
 .model-status { margin-top: 14px; }
 .model-status-row {
   display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;
