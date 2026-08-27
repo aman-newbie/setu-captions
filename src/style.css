@@ -242,7 +242,6 @@ button, input, select {
   border-radius: 8px;
   padding: 10px 12px;
   background: var(--surface-2);
-  cursor: pointer;
 }
 .caption-row.active { border-color: var(--accent); background: rgba(242, 169, 59, 0.07); }
 
@@ -253,7 +252,12 @@ button, input, select {
   margin-bottom: 6px;
   display: flex;
   gap: 8px;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  cursor: pointer;
 }
+.caption-time:hover { color: var(--accent); text-decoration: underline; }
 
 .caption-text {
   width: 100%;

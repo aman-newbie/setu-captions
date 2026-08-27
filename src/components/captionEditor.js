@@ -40,26 +40,31 @@ export class CaptionEditor {
       row.className = 'caption-row';
       row.dataset.index = String(index);
 
-      const time = document.createElement('div');
-      time.className = 'caption-time';
-      time.textContent = `${formatSRTTime(seg.start)} → ${formatSRTTime(seg.end)}`;
+      // A real <button> instead of a click handler on the row: it's
+      // reachable and activatable with the keyboard (Tab + Enter/Space) for
+      // free, and it avoids nesting one interactive element (the row) around
+      // another (the textarea), which is invisible to assistive tech.
+      const timeBtn = document.createElement('button');
+      timeBtn.type = 'button';
+      timeBtn.className = 'caption-time';
+      timeBtn.textContent = `${formatSRTTime(seg.start)} → ${formatSRTTime(seg.end)}`;
+      timeBtn.setAttribute('aria-label', `Jump video to ${formatSRTTime(seg.start)}`);
+      timeBtn.addEventListener('click', () => {
+        this.videoEl.currentTime = seg.start;
+        this.videoEl.play?.().catch(() => {});
+      });
 
       const textarea = document.createElement('textarea');
       textarea.className = 'caption-text';
       textarea.value = seg.text;
       textarea.spellcheck = false;
+      textarea.setAttribute('aria-label', `Caption text for ${formatSRTTime(seg.start)} to ${formatSRTTime(seg.end)}`);
       textarea.addEventListener('input', () => {
         this.segments[index].text = textarea.value;
         this.onChange?.(this.segments);
       });
 
-      row.addEventListener('click', (e) => {
-        if (e.target === textarea) return;
-        this.videoEl.currentTime = seg.start;
-        this.videoEl.play?.().catch(() => {});
-      });
-
-      row.appendChild(time);
+      row.appendChild(timeBtn);
       row.appendChild(textarea);
       this.listEl.appendChild(row);
     });
