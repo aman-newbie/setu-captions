@@ -95,16 +95,10 @@ function currentLanguageHint() {
 
 function setModelProgress(progress) {
   modelStatus.hidden = false;
-  if (progress?.status === 'progress' && typeof progress.progress === 'number') {
-    const pct = Math.round(progress.progress);
-    modelStatusLabel.textContent = `Downloading model: ${progress.file || ''}`.trim();
-    modelStatusPct.textContent = `${pct}%`;
-    modelStatusBar.style.width = `${pct}%`;
-  } else if (progress?.status === 'done') {
-    modelStatusLabel.textContent = 'Preparing AI model…';
-  } else {
-    modelStatusLabel.textContent = 'Preparing AI model…';
-  }
+  const pct = Math.round(progress?.overallPercent ?? 0);
+  modelStatusPct.textContent = `${pct}%`;
+  modelStatusBar.style.width = `${pct}%`;
+  modelStatusLabel.textContent = pct > 0 && pct < 100 ? 'Downloading model…' : 'Preparing AI model…';
 }
 
 transcribeBtn.addEventListener('click', async () => {
