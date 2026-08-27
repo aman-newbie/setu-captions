@@ -1,0 +1,21 @@
+{
+  "name": "setu-captions",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Free, private, on-device caption generator for Hindi, English and Hinglish video.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@xenova/transformers": "2.17.2"
+  },
+  "devDependencies": {
+    "vite": "5.4.11",
+    "vite-plugin-pwa": "0.20.5",
+    "vitest": "2.1.4"
+  }
+}
