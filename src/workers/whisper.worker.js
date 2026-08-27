@@ -17,14 +17,51 @@ const MODEL_BY_MODE = {
 let transcriber = null;
 let loadedModelId = null;
 
+// Whisper ships as several separate files (encoder, decoder, tokenizer,
+// configs...). Each one reports its own 0-100% independently, so passing
+// that straight through makes the bar jump backward every time a new file
+// starts. We track bytes across ALL files and report one combined,
+// never-decreasing percentage instead.
+function createProgressAggregator(postProgress) {
+  const files = new Map(); // file -> { loaded, total }
+  let maxPercent = 0;
+
+  return (event) => {
+    if (event?.file) {
+      const prev = files.get(event.file) || { loaded: 0, total: 0 };
+      if (typeof event.loaded === 'number') prev.loaded = event.loaded;
+      if (typeof event.total === 'number') prev.total = event.total;
+      files.set(event.file, prev);
+    }
+
+    let loadedSum = 0;
+    let totalSum = 0;
+    for (const { loaded, total } of files.values()) {
+      loadedSum += loaded;
+      totalSum += total;
+    }
+
+    const rawPercent = totalSum > 0 ? (loadedSum / totalSum) * 100 : 0;
+    maxPercent = Math.max(maxPercent, rawPercent); // never let it go backward
+
+    postProgress({
+      status: event?.status,
+      file: event?.file,
+      overallPercent: Math.min(100, maxPercent)
+    });
+  };
+}
+
 async function ensureModel(mode) {
   const modelId = MODEL_BY_MODE[mode] || MODEL_BY_MODE.fast;
   if (transcriber && loadedModelId === modelId) return transcriber;
 
+  const reportProgress = createProgressAggregator((payload) => {
+    self.postMessage({ type: 'progress', payload });
+  });
+
   transcriber = await pipeline('automatic-speech-recognition', modelId, {
-    progress_callback: (progress) => {
-      self.postMessage({ type: 'progress', payload: progress });
-    }
+    progress_callback: reportProgress
   });
   loadedModelId = modelId;
   return transcriber;
