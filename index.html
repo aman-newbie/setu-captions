@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Free, private, on-device caption generator for Hindi, English and Hinglish video." />
+  <meta name="theme-color" content="#0F1115" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+  <link rel="apple-touch-icon" href="/icons/icon.svg" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <title>Setu Captions — free Hindi / English / Hinglish subtitles</title>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">से</span>
+        <div>
+          <h1>Setu Captions</h1>
+          <p class="tagline">A bridge between your video and its subtitles — free, private, on your device.</p>
+        </div>
+      </div>
+      <div class="privacy-pill" title="Audio never leaves your browser">
+        <span class="dot"></span> Runs on your device
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="panel panel-media" aria-label="Video">
+        <div id="dropzone" class="dropzone">
+          <input id="file-input" type="file" accept="video/*,audio/*" hidden />
+          <div id="dropzone-empty" class="dropzone-empty">
+            <p class="dz-title">Drop a video or audio file here</p>
+            <p class="dz-sub">or</p>
+            <button id="browse-btn" class="btn btn-primary" type="button">Choose a file</button>
+            <p class="dz-note">Nothing is uploaded anywhere. Processing happens locally in this tab.</p>
+          </div>
+          <video id="preview" class="preview" controls playsinline hidden></video>
+        </div>
+
+        <div id="model-status" class="model-status" hidden>
+          <div class="model-status-row">
+            <span id="model-status-label">Preparing AI model…</span>
+            <span id="model-status-pct">0%</span>
+          </div>
+          <div class="progress-track">
+            <div id="model-status-bar" class="progress-bar"></div>
+          </div>
+          <p class="model-status-note">This model runs locally on your device. Your audio does not need to be uploaded.</p>
+        </div>
+
+        <div class="controls-row">
+          <fieldset class="mode-select" id="mode-select">
+            <legend>Mode</legend>
+            <label><input type="radio" name="mode" value="fast" checked /> Fast</label>
+            <label><input type="radio" name="mode" value="accurate" /> Accurate</label>
+          </fieldset>
+
+          <label class="lang-select">
+            Language hint
+            <select id="lang-select">
+              <option value="auto" selected>Auto / Hinglish (recommended)</option>
+              <option value="hi">Hindi</option>
+              <option value="en">English</option>
+            </select>
+          </label>
+
+          <button id="transcribe-btn" class="btn btn-accent" type="button" disabled>Generate captions</button>
+        </div>
+        <p id="device-hint" class="device-hint" role="status"></p>
+      </section>
+
+      <section class="panel panel-captions" aria-label="Captions">
+        <div class="panel-header">
+          <h2>Captions</h2>
+          <div class="export-buttons">
+            <button id="export-srt" class="btn btn-ghost" type="button" disabled>Export .srt</button>
+            <button id="export-vtt" class="btn btn-ghost" type="button" disabled>Export .vtt</button>
+          </div>
+        </div>
+        <ol id="caption-list" class="caption-list" aria-live="polite">
+          <li class="caption-empty">Captions will appear here once generated. Every line stays editable.</li>
+        </ol>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Open source · No account · No upload · <a href="https://github.com/aman-newbie/setu-captions" id="repo-link" target="_blank" rel="noopener">View source on GitHub</a></p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
