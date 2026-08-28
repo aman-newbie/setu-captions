@@ -29,7 +29,11 @@
       <section class="panel panel-media" aria-label="Video">
         <div id="dropzone" class="dropzone">
           <input id="file-input" type="file" accept="video/*,audio/*" hidden />
-          <div id="dropzone-empty" class="dropzone-empty">
+          <div id="dropzone-empty" class="dropzone-empty" role="button" tabindex="0" aria-label="Choose a video or audio file">
+            <svg class="dz-icon" viewBox="0 0 24 24" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 16V4M12 4l-4 4M12 4l4 4" />
+              <path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16" />
+            </svg>
             <p class="dz-title">Drop a video or audio file here</p>
             <p class="dz-sub">or</p>
             <button id="browse-btn" class="btn btn-primary" type="button">Choose a file</button>

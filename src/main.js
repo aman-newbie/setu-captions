@@ -84,6 +84,23 @@ function isSupportedMediaFile(file) {
 
 // ---- File selection (click + drag/drop) ----
 browseBtn.addEventListener('click', () => fileInput.click());
+// Clicking anywhere on the empty dropzone (not just the button) opens the
+// picker too — a bigger, more forgiving touch target on mobile. Scoped to
+// dropzoneEmpty so it never fires once a video is loaded and showing native
+// playback controls in its place.
+dropzoneEmpty.addEventListener('click', (e) => {
+  if (e.target.closest('#browse-btn')) return;
+  fileInput.click();
+});
+// Keyboard support to match the role="button"/tabindex="0" added to the
+// dropzone empty state — Enter/Space opens the file picker, same as click.
+dropzoneEmpty.addEventListener('keydown', (e) => {
+  if (e.target.closest('#browse-btn')) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    fileInput.click();
+  }
+});
 fileInput.addEventListener('change', () => {
   if (fileInput.files?.[0]) handleFile(fileInput.files[0]);
   fileInput.value = ''; // allow re-selecting the same file later
